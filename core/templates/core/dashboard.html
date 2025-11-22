@@ -1,0 +1,151 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-9">
+        <div class="text-center mb-5" style="padding: 3rem 0 2rem 0;">
+            <h1 class="display-4 mb-3" style="font-size: 3.5rem; line-height: 1.1; font-weight: 800;">
+                🔍 {% trans "Reddit" %}<br>{% trans "Surf" %}
+            </h1>
+            <p class="lead" style="font-size: 1.35rem; max-width: 600px; margin: 0 auto 1.5rem auto; color: #d4d4d8;">
+                Discover hidden gems from Reddit discussions with AI-powered analysis and chat.
+            </p>
+            <a href="{% url 'github_surf' %}" class="btn btn-outline-primary btn-lg"
+                style="border-radius: 12px; padding: 0.75rem 2rem;">
+                🌊 {% trans "Or Explore GitHub" %}
+            </a>
+        </div>
+
+        <div class="card p-4 mb-5" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);">
+            <form method="post" action="{% url 'dashboard' %}">
+                {% csrf_token %}
+                <div class="input-group input-group-lg">
+                    <input type="text" name="query" class="form-control"
+                        placeholder="🔍 {% trans 'What do you want to research?' %}" required
+                        style="border-top-left-radius: 16px; border-bottom-left-radius: 16px; font-size: 1.1rem;">
+                    <button class="btn btn-primary" type="submit"
+                        style="border-top-right-radius: 16px; border-bottom-right-radius: 16px; padding: 0 2.5rem;">
+                        <strong>{% trans "Start Discovery" %}</strong>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h3 style="font-size: 1.75rem; font-weight: 700; color: #ffffff;">📚 {% trans "Recent Sessions" %}</h3>
+            <div class="d-flex align-items-center gap-3">
+                {% if sessions %}
+                <form method="post" action="{% url 'clear_sessions' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        🗑️ {% trans "Clear All" %}
+                    </button>
+                </form>
+                {% endif %}
+                <span class="badge bg-light" style="padding: 0.625rem 1.25rem; font-size: 0.875rem;">
+                    {{ sessions.count }} {% trans "Total" %}
+                </span>
+            </div>
+        </div>
+
+        <div class="list-group">
+            {% for session in sessions %}
+            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-0">
+                <a href="{% url 'session_detail' session.id %}"
+                    class="d-flex justify-content-between align-items-center w-100 p-3" style="text-decoration: none;">
+                    <div>
+                        <h5 class="mb-2" style="font-weight: 700; font-size: 1.25rem; color: #ffffff;">
+                            {{ session.keywords }}
+                        </h5>
+                        <small style="font-size: 0.9rem; color: #d4d4d8;">
+                            📅 {{ session.created_at|date:"M d, Y" }} • {{ session.created_at|date:"H:i" }}
+                        </small>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-info" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            {{ session.items.count }} {% trans "items" %}
+                        </span>
+                        <span style="color: #a5b4fc; font-size: 1.5rem;">→</span>
+                    </div>
+                </a>
+                <form method="post" action="{% url 'delete_session' session.id %}" class="px-3"
+                    style="margin: 0; border-left: 1px solid rgba(255,255,255,0.1);">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link text-danger p-2" title="{% trans 'Delete Session' %}"
+                        style="text-decoration: none; font-size: 1.2rem;">
+                        ✕
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="text-center py-5"
+                style="background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🔍</div>
+                <p style="font-size: 1.25rem; margin: 0; color: #d4d4d8;">
+                    {% trans "No research sessions yet." %}<br>
+                    <small style="color: #a1a1aa;">{% trans "Start your first discovery above!" %}</small>
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modern Confirmation Modal -->
+<div id="confirmModal" class="modal fade" tabindex="-1" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+            <div class="modal-header border-0" style="padding: 2rem 2rem 1rem 2rem;">
+                <h5 class="modal-title" style="font-weight: 700; font-size: 1.5rem;">⚠️ Confirm Action</h5>
+            </div>
+            <div class="modal-body" style="padding: 0 2rem 1.5rem 2rem;">
+                <p id="confirmMessage" style="font-size: 1.1rem; color: #d4d4d8;"></p>
+            </div>
+            <div class="modal-footer border-0" style="padding: 0 2rem 2rem 2rem; gap: 1rem;">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                    style="border-radius: 12px; padding: 0.75rem 1.5rem;">Cancel</button>
+                <button type="button" id="confirmButton" class="btn btn-danger"
+                    style="border-radius: 12px; padding: 0.75rem 1.5rem;">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let pendingForm = null;
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+    function showConfirm(message, form) {
+        document.getElementById('confirmMessage').textContent = message;
+        pendingForm = form;
+        confirmModal.show();
+    }
+
+    document.getElementById('confirmButton').addEventListener('click', () => {
+        if (pendingForm) {
+            pendingForm.submit();
+            pendingForm = null;
+        }
+        confirmModal.hide();
+    });
+
+    // Handle Clear All button
+    document.querySelectorAll('form[action*="clear_sessions"]').forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showConfirm('Are you sure you want to delete all sessions? This action cannot be undone.', form);
+        });
+    });
+
+    // Handle Delete Session buttons
+    document.querySelectorAll('form[action*="delete_session"]').forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showConfirm('Delete this session? You will lose all data associated with it.', form);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 style="font-weight: 700; font-size: 1.75rem; margin-bottom: 0.25rem;">
+                    💬 {{ chat_session.title|truncatewords:8 }}
+                </h3>
+                <p class="text-muted" style="font-size: 0.875rem; margin: 0;">
+                    AI-powered conversation
+                </p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-sm">
+                ← Dashboard
+            </a>
+        </div>
+
+        <div class="card" style="border-radius: 24px;">
+            <div class="card-body" style="padding: 0;">
+                <div id="chat-messages" class="chat-container">
+                    {% for message in chat_session.messages.all %}
+                    {% include 'core/partials/chat_message.html' with message=message %}
+                    {% endfor %}
+                </div>
+
+                <div
+                    style="padding: 1.5rem; border-top: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+                    <form hx-post="{% url 'send_message' chat_session.id %}" hx-target="#chat-messages"
+                        hx-swap="beforeend"
+                        hx-on::after-request="this.reset(); document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;">
+                        {% csrf_token %}
+                        <div class="input-group" style="gap: 0.75rem;">
+                            <input type="text" name="message" class="form-control"
+                                placeholder="💭 Ask anything about this content..." required autocomplete="off"
+                                style="flex: 1; border-radius: 16px;">
+                            <button class="btn btn-primary" type="submit" style="border-radius: 16px; padding: 0 2rem;">
+                                <strong>Send</strong>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatContainer = document.getElementById('chat-messages');
+
+    // Auto-scroll to bottom
+    const observer = new MutationObserver(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+    observer.observe(chatContainer, { childList: true });
+
+    // Initial scroll
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Smooth scroll animation
+    chatContainer.style.scrollBehavior = 'smooth';
+</script>
+{% endblock %}

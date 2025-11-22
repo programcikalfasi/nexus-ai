@@ -1,0 +1,116 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12 text-center">
+        <h1 class="display-4 mb-3" style="font-weight: 800; font-size: 3rem;">
+            🌊 GitHub <span
+                style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Surf</span>
+        </h1>
+        <p class="lead text-muted" style="font-size: 1.2rem; max-width: 700px; margin: 0 auto;">
+            {% trans "Discover hidden gems, trending repos, and awesome lists with AI-powered search." %}
+        </p>
+    </div>
+</div>
+
+<div class="row mb-5 justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <form hx-get="{% url 'github_discover' %}" hx-target="#repo-grid" hx-swap="innerHTML" hx-include="[name='mode']"
+            hx-indicator="#deep-research-indicator">
+            <input type="hidden" name="mode" value="deep_research">
+            <div class="input-group input-group-lg"
+                style="box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2); border-radius: 16px;">
+                <span class="input-group-text border-0"
+                    style="background: rgba(255,255,255,0.1); border-top-left-radius: 16px; border-bottom-left-radius: 16px; font-size: 1.5rem;">
+                    🧠
+                </span>
+                <input type="text" name="query" class="form-control border-0"
+                    placeholder="{% trans 'e.g., Find me high-performance Rust networking libraries not yet mainstream' %}"
+                    style="background: rgba(255,255,255,0.08); color: white; font-size: 1.1rem;">
+                <button class="btn btn-primary border-0" type="submit"
+                    style="border-top-right-radius: 16px; border-bottom-right-radius: 16px; padding: 0 2.5rem; font-size: 1rem;">
+                    <strong>{% trans "Deep Research" %}</strong>
+                </button>
+            </div>
+
+            <!-- Progressive Loading Indicator -->
+            <div id="deep-research-indicator" class="htmx-indicator mt-3">
+                <div class="card"
+                    style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 16px; padding: 1.5rem;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div>
+                            <h6 class="mb-1" style="color: #667eea; font-weight: 600;">Surfing the GitHub ocean...</h6>
+                            <p class="mb-0 small text-muted">This may take 15-30 seconds</p>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px; background: rgba(255,255,255,0.1);">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                            style="width: 100%; background: var(--primary-gradient);"></div>
+                    </div>
+                    <div class="mt-3 small" style="color: #a5b4fc;">
+                        <div class="mb-1">🧠 Step 1: Generating search strategies...</div>
+                        <div class="mb-1">🔍 Step 2: Exploring GitHub repositories...</div>
+                        <div>🎯 Step 3: AI analyzing and curating results...</div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <p class="text-center mt-3 small text-muted">
+            💡 Tip: Be specific! Instead of "Python web frameworks", try "production-ready async Python web frameworks
+            with built-in admin panels"
+        </p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <button hx-get="{% url 'github_discover' %}?mode=trending" hx-target="#repo-grid" hx-swap="innerHTML"
+                class="btn btn-outline-primary active-mode" onclick="setActive(this)">
+                🔥 {% trans "Trending Now" %}
+            </button>
+
+            <button hx-get="{% url 'github_discover' %}?mode=awesome" hx-target="#repo-grid" hx-swap="innerHTML"
+                class="btn btn-outline-primary" onclick="setActive(this)">
+                😎 {% trans "Awesome Lists" %}
+            </button>
+
+            <button hx-get="{% url 'github_discover' %}?mode=hidden_gems" hx-target="#repo-grid" hx-swap="innerHTML"
+                class="btn btn-outline-primary" onclick="setActive(this)">
+                💎 {% trans "Hidden Gems" %}
+            </button>
+
+            <button hx-get="{% url 'github_discover' %}?mode=serendipity" hx-target="#repo-grid" hx-swap="innerHTML"
+                class="btn btn-outline-primary" onclick="setActive(this)">
+                🎲 {% trans "Serendipity" %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="repo-grid" class="row g-4" hx-get="{% url 'github_discover' %}?mode=trending" hx-trigger="load">
+    <!-- Results will be loaded here -->
+    <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setActive(btn) {
+        document.querySelectorAll('.btn-outline-primary').forEach(b => {
+            b.classList.remove('active', 'bg-primary', 'text-white');
+            b.style.background = 'transparent';
+            b.style.color = '#667eea';
+        });
+        btn.classList.add('active');
+        btn.style.background = 'var(--primary-gradient)';
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+    }
+</script>
+{% endblock %}

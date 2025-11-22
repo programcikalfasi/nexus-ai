@@ -1,0 +1,17 @@
+<div class="message {{ message.sender }}" style="animation: messageSlide 0.3s ease-out;">
+    <div style="margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; opacity: 0.8;">
+        {% if message.sender == 'user' %}
+        👤 You
+        {% else %}
+        🧠 Code Analyst
+        {% endif %}
+    </div>
+
+    <div style="line-height: 1.6; word-wrap: break-word; white-space: pre-wrap;">
+        {{ message.message|linebreaksbr }}
+    </div>
+
+    <div class="small mt-2" style="opacity: 0.6; font-size: 0.75rem; text-align: right;">
+        {{ message.timestamp|date:"H:i" }}
+    </div>
+</div>

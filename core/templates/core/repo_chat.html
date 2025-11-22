@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 style="font-weight: 700; font-size: 1.75rem; margin-bottom: 0.25rem;">
+                    🧠 {{ repo_session.repo_owner }}/{{ repo_session.repo_name }}
+                </h3>
+                <p class="text-muted" style="font-size: 0.875rem; margin: 0;">
+                    Deep Code Analysis
+                </p>
+            </div>
+            <a href="{% url 'github_surf' %}" class="btn btn-outline-primary btn-sm">
+                ← Back to GitHub Surf
+            </a>
+        </div>
+
+        <div class="card" style="border-radius: 24px;">
+            <div class="card-body" style="padding: 0;">
+                <div id="repo-chat-messages" class="chat-container">
+                    {% for message in repo_session.messages.all %}
+                    {% include 'core/partials/repo_message.html' with message=message %}
+                    {% endfor %}
+
+                    {% if not repo_session.messages.exists %}
+                    <div class="text-center py-5" style="opacity: 0.6;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+                        <p style="font-size: 1.1rem;">
+                            {% trans "Ask me anything about this repository's architecture, code structure, or
+                            implementation." %}
+                        </p>
+                        <p class="text-muted">
+                            {% trans "Try: 'Explain the main architecture' or 'What dependencies does this use?'" %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div
+                    style="padding: 1.5rem; border-top: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02);">
+                    <form hx-post="{% url 'send_repo_message' repo_session.id %}" hx-target="#repo-chat-messages"
+                        hx-swap="beforeend" hx-indicator="#loading-indicator"
+                        hx-on::after-request="this.reset(); document.getElementById('repo-chat-messages').scrollTop = document.getElementById('repo-chat-messages').scrollHeight;">
+                        {% csrf_token %}
+                        <div class="input-group" style="gap: 0.75rem;">
+                            <input type="text" name="message" class="form-control"
+                                placeholder="💬 Ask about code architecture, dependencies, or implementation..."
+                                required autocomplete="off" style="flex: 1; border-radius: 16px;">
+                            <button class="btn btn-primary" type="submit" style="border-radius: 16px; padding: 0 2rem;">
+                                <strong>Send</strong>
+                            </button>
+                        </div>
+                        <div id="loading-indicator" class="htmx-indicator text-center mt-2" style="color: #667eea;">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Analyzing repository...
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatContainer = document.getElementById('repo-chat-messages');
+
+    // Auto-scroll to bottom
+    const observer = new MutationObserver(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+    observer.observe(chatContainer, { childList: true });
+
+    // Initial scroll
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Smooth scroll animation
+    chatContainer.style.scrollBehavior = 'smooth';
+</script>
+{% endblock %}

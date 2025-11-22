@@ -1,0 +1,143 @@
+{% extends 'core/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card" style="border-radius: 24px; margin-top: 3rem;">
+            <div class="card-header text-center"
+                style="padding: 2.5rem 2rem 1.5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-bottom: 1px solid var(--border-color);">
+                <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">⚙️ {% trans "API Settings" %}
+                </h2>
+                <p class="text-muted" style="margin: 0; font-size: 1rem;">
+                    {% trans "Configure your personal API keys for premium features" %}
+                </p>
+            </div>
+            <div class="card-body" style="padding: 2.5rem;">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert"
+                    style="border-radius: 12px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Gemini API Key -->
+                    <div class="mb-4">
+                        <label class="form-label" style="font-weight: 600; font-size: 1.1rem;">
+                            🤖 {% trans "Gemini API Key" %}
+                            {% if user.userprofile.has_gemini_key %}
+                            <span class="badge bg-success ms-2">{% trans "Configured" %} ✓</span>
+                            {% else %}
+                            <span class="badge bg-warning ms-2">{% trans "Not Set" %} ⚠️</span>
+                            {% endif %}
+                        </label>
+                        <input type="password" name="gemini_api_key" class="form-control form-control-lg"
+                            value="{{ user.userprofile.gemini_api_key|default:'' }}" placeholder="AIzaSy...xxxx"
+                            style="font-family: monospace; font-size: 0.9rem;">
+                        <div class="form-text" style="margin-top: 0.75rem; line-height: 1.7;">
+                            🔒 {% trans "Your API key is stored securely and never shared." %}<br>
+                            💡 {% trans "Required for AI analysis, chat, and deep research features." %}
+                        </div>
+                    </div>
+
+                    <!-- GitHub Access Token -->
+                    <div class="mb-4">
+                        <label class="form-label" style="font-weight: 600; font-size: 1.1rem;">
+                            🌊 {% trans "GitHub Access Token" %}
+                            {% if user.userprofile.has_github_token %}
+                            <span class="badge bg-success ms-2">{% trans "Configured" %} ✓</span>
+                            {% else %}
+                            <span class="badge bg-secondary ms-2">{% trans "Optional" %}</span>
+                            {% endif %}
+                        </label>
+                        <input type="password" name="github_token" class="form-control form-control-lg"
+                            value="{{ user.userprofile.github_access_token|default:'' }}"
+                            placeholder="ghp_xxxx or github_pat_xxxx"
+                            style="font-family: monospace; font-size: 0.9rem;">
+                        <div class="form-text" style="margin-top: 0.75rem; line-height: 1.7;">
+                            📊 {% trans "Without token:" %} <strong>60</strong> requests/hour<br>
+                            🚀 {% trans "With token:" %} <strong>5,000</strong> requests/hour (83x faster!)
+                        </div>
+                    </div>
+
+                    <!-- Account Info -->
+                    <div class="alert alert-info"
+                        style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 12px; margin-bottom: 2rem;">
+                        <h6 style="font-weight: 600; margin-bottom: 0.75rem;">📈 {% trans "Your Plan" %}</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{% trans "Account Type:" %}</span>
+                            <span
+                                class="badge {% if user.userprofile.is_premium %}bg-primary{% else %}bg-secondary{% endif %}">
+                                {% if user.userprofile.is_premium %}Premium 👑{% else %}Free{% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>{% trans "Daily Search Limit:" %}</span>
+                            <strong>{% if user.userprofile.is_premium %}Unlimited{% else %}{{
+                                user.userprofile.search_limit_daily }}{% endif %}</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg"
+                            style="padding: 1rem; border-radius: 12px;">
+                            <strong>💾 {% trans "Save API Keys" %}</strong>
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary" style="border-radius: 12px;">
+                            {% trans "Cancel" %}
+                        </a>
+                    </div>
+                </form>
+
+                <!-- API Key Help Section -->
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <h5 style="font-weight: 700; margin-bottom: 1.5rem; font-size: 1.25rem;">📚 {% trans "How to Get API
+                        Keys" %}</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100"
+                                style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px;">
+                                <div class="card-body">
+                                    <h6 style="font-weight: 600; margin-bottom: 1rem;">🤖 {% trans "Gemini API" %}</h6>
+                                    <p class="small text-muted" style="line-height: 1.6;">
+                                        {% trans "Free tier with generous limits. Get started in minutes." %}
+                                    </p>
+                                    <a href="https://ai.google.dev/gemini-api/docs/api-key" target="_blank"
+                                        rel="noopener" class="btn btn-sm btn-outline-primary w-100"
+                                        style="border-radius: 8px;">
+                                        {% trans "Get Gemini Key" %} →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100"
+                                style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px;">
+                                <div class="card-body">
+                                    <h6 style="font-weight: 600; margin-bottom: 1rem;">🌊 {% trans "GitHub Token" %}
+                                    </h6>
+                                    <p class="small text-muted" style="line-height: 1.6;">
+                                        {% trans "Increase your rate limit 83x. Totally free!" %}
+                                    </p>
+                                    <a href="https://github.com/settings/tokens" target="_blank" rel="noopener"
+                                        class="btn btn-sm btn-outline-primary w-100" style="border-radius: 8px;">
+                                        {% trans "Get GitHub Token" %} →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

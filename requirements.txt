@@ -1,0 +1,15 @@
+Django==5.2.8
+python-dotenv==1.2.1
+google-generativeai==0.8.3
+requests==2.32.3
+playwright==1.49.1
+
+# Production dependencies
+gunicorn==23.0.0
+psycopg2-binary==2.9.10
+whitenoise==6.8.2
+dj-database-url==2.3.0
+
+# Optional but recommended
+redis==5.2.1
+celery==5.4.0

@@ -1,0 +1,77 @@
+# Turkish translations for Nexus AI.
+# Copyright (C) 2025
+# This file is distributed under the same license as the Nexus AI package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-21 14:40+0000\n"
+"PO-Revision-Date: 2025-11-21 14:41+0000\n"
+"Last-Translator: Nexus AI Team\n"
+"Language-Team: Turkish\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: core/templates/core/base.html:444
+msgid "Settings"
+msgstr "Ayarlar"
+
+#: core/templates/core/base.html:447
+msgid "Logout"
+msgstr "Çıkış"
+
+#: core/templates/core/dashboard.html:9
+msgid "Discover"
+msgstr "Keşfet"
+
+#: core/templates/core/dashboard.html:9
+msgid "Reddit Intelligence"
+msgstr "Reddit Zekası"
+
+#: core/templates/core/dashboard.html:12
+msgid "AI-powered research assistant that finds, analyzes, and lets you chat with Reddit discussions."
+msgstr "Reddit tartışmalarını bulan, analiz eden ve sohbet etmenizi sağlayan yapay zeka destekli araştırma asistanı."
+
+#: core/templates/core/dashboard.html:22
+msgid "What do you want to research?"
+msgstr "Ne araştırmak istiyorsunuz?"
+
+#: core/templates/core/dashboard.html:26
+msgid "Start Discovery"
+msgstr "Keşfe Başla"
+
+#: core/templates/core/dashboard.html:33
+msgid "Recent Sessions"
+msgstr "Son Oturumlar"
+
+#: core/templates/core/dashboard.html:35
+msgid "Total"
+msgstr "Toplam"
+
+#: core/templates/core/dashboard.html:52
+msgid "items"
+msgstr "öğe"
+
+#: core/templates/core/dashboard.html:62
+msgid "No research sessions yet."
+msgstr "Henüz araştırma oturumu yok."
+
+#: core/templates/core/dashboard.html:63
+msgid "Start your first discovery above!"
+msgstr "İlk keşfinizi yukarıdan başlatın!"
+
+#: core/templates/core/partials/item_card.html:27
+msgid "Hype"
+msgstr "Heyecan"
+
+#: core/templates/core/partials/item_card.html:51
+msgid "Chat with this"
+msgstr "Bununla sohbet et"
+
+#: core/templates/core/partials/item_card.html:58
+msgid "Analyze with AI"
+msgstr "Yapay Zeka ile Analiz Et"
