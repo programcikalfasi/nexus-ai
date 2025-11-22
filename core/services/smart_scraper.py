@@ -1,98 +1,76 @@
-from playwright.sync_api import sync_playwright
+import requests
+from bs4 import BeautifulSoup
 import time
-import random
-import logging
-
-logger = logging.getLogger(__name__)
+import urllib.parse
 
 class SmartRedditScraper:
-    def __init__(self, api_key=None):
-        self.api_key = api_key
+    def __init__(self):
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
 
-    def search(self, query, max_retries=3):
+    def search(self, query, limit=10):
         """
-        Searches specifically on Reddit using Playwright to get Google Search results.
-        Includes retry logic and robust error handling.
+        Search Google for Reddit threads using requests + BeautifulSoup
         """
-        print(f"SmartRedditScraper: Searching for '{query}'...")
+        print(f"🔍 Searching for: {query}")
+        
+        # Add site:reddit.com to query
+        search_query = f"{query} site:reddit.com"
+        encoded_query = urllib.parse.quote(search_query)
+        url = f"https://www.google.com/search?q={encoded_query}&num={limit+5}"
+        
         results = []
         
-        for attempt in range(max_retries):
-            try:
-                with sync_playwright() as p:
-                    # Launch browser (headless=True for server environment)
-                    browser = p.chromium.launch(headless=True)
-                    context = browser.new_context(
-                        user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                    )
-                    page = context.new_page()
-                    
-                    # Use Google Search with site:reddit.com
-                    search_url = f"https://www.google.com/search?q=site:reddit.com+{query.replace(' ', '+')}"
-                    
-                    # Go to page with timeout
-                    page.goto(search_url, timeout=10000)
-                    
-                    # Wait for results to load
-                    try:
-                        page.wait_for_selector('div.g', timeout=5000)
-                    except:
-                        print(f"Attempt {attempt + 1}: No results selector found.")
-                        browser.close()
-                        continue
+        try:
+            response = requests.get(url, headers=self.headers, timeout=10)
+            
+            if response.status_code == 429:
+                print("⚠️ Google rate limit hit. Waiting...")
+                time.sleep(2)
+                return []
+                
+            if response.status_code != 200:
+                print(f"❌ Search failed: {response.status_code}")
+                return []
 
-                    # Extract results
-                    search_results = page.query_selector_all('div.g')
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Find search results
+            search_items = soup.select('div.g')
+            
+            for item in search_items:
+                if len(results) >= limit:
+                    break
                     
-                    for result in search_results:
-                        if len(results) >= 5:
-                            break
-                            
-                        try:
-                            # Extract Title (h3)
-                            title_el = result.query_selector('h3')
-                            if not title_el:
-                                continue
-                            title = title_el.inner_text()
-                            
-                            # Extract Link (a)
-                            link_el = result.query_selector('a')
-                            if not link_el:
-                                continue
-                            url = link_el.get_attribute('href')
-                            
-                            if not url or 'reddit.com/r/' not in url:
-                                continue
-                                
-                            # Extract Subreddit
-                            subreddit = 'reddit'
-                            if '/r/' in url:
-                                parts = url.split('/r/')
-                                if len(parts) > 1:
-                                    subreddit = parts[1].split('/')[0]
-                            
-                            # Avoid duplicates
-                            if any(r['url'] == url for r in results):
-                                continue
+                link_tag = item.select_one('a')
+                if not link_tag:
+                    continue
+                    
+                href = link_tag.get('href')
+                if not href or 'reddit.com' not in href:
+                    continue
+                
+                title_tag = item.select_one('h3')
+                title = title_tag.text if title_tag else "No Title"
+                
+                # Extract snippet
+                snippet_tag = item.select_one('div.VwiC3b') or item.select_one('div.IsZvec')
+                snippet = snippet_tag.text if snippet_tag else ""
+                
+                results.append({
+                    'title': title,
+                    'url': href,
+                    'snippet': snippet,
+                    'source': 'reddit'
+                })
+                
+            print(f"✅ Found {len(results)} results")
+            return results
 
-                            results.append({
-                                'title': title,
-                                'url': url,
-                                'subreddit': subreddit
-                            })
-                            
-                        except Exception as e:
-                            print(f"Error parsing result: {e}")
-                            continue
-                    
-                    browser.close()
-                    
-                    # If we found results, break the retry loop
-                    if results:
-                        break
-                        
-            except Exception as e:
-                print(f"SmartRedditScraper Error (Attempt {attempt + 1}/{max_retries}): {e}")
-                time.sleep(2 * (attempt + 1)) # Exponential backoff
-        
-        return results
+        except Exception as e:
+            print(f"❌ Error during search: {str(e)}")
+            return []
+
+    def close(self):
+        pass
