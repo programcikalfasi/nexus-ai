@@ -1,0 +1,28 @@
+databases:
+  - name: nexus-db
+    plan: free
+    databaseName: nexusai
+    user: nexususer
+
+services:
+  - type: web
+    name: nexus-ai
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
+    startCommand: gunicorn nexus_ai.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nexus-db
+          property: connectionString
+      - key: DJANGO_SETTINGS_MODULE
+        value: nexus_ai.settings_production
+      - key: WEB_CONCURRENCY
+        value: 2
